@@ -1,0 +1,12 @@
+
+
+
+
+generic: 
+  namespace: default
+  replicas: 1
+
+docker: 
+  image: alpine
+  version: 3.7
+

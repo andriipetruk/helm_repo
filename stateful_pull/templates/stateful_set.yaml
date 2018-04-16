@@ -1,0 +1,32 @@
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata: 
+  name: {{ template "fullname" . }}
+  namespace: {{ .Values.generic.namespace }}
+  labels:
+    app: {{ template "fullname" . }}
+spec:
+  replicas: {{ .Values.generic.replicas }}
+  template:  
+    metadata: 
+      labels: 
+        app: {{ template "fullname" . }}
+    spec:
+      containers: 
+        - name: {{ template "fullname" . }}
+          imagePullPolicy: Always
+          image: {{ .Values.docker.image }}:{{ .Values.docker.version }}
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/images
+            - name: docker-sock 
+              mountPath: /var/run 
+          command: [ "/bin/sh", "-c", "--" ]
+          args: [ "echo \"http://dl-4.alpinelinux.org/alpine/edge/community\" >> /etc/apk/repositories; apk update;  apk add docker;  while true; do cd /etc/images; for img in *; do img_ver=$(cat /etc/images/$img); docker pull $img:$img_ver; done;  sleep 30; done;" ]
+      volumes:
+        - name: config-volume
+          configMap:
+            name: {{ template "fullname" . }}-conf
+        - name: docker-sock 
+          hostPath: 
+            path: /var/run
